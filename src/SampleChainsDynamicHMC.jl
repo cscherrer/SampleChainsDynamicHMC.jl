@@ -22,29 +22,6 @@ export DynamicHMCChain
     transform
 end
 
-samples(chain::DynamicHMCChain) = getfield(chain, :samples)
-logp(chain::DynamicHMCChain) = getfield(chain, :logp)
-
-SampleChains.summarize(ch::DynamicHMCChain) = summarize(samples(ch))
-
-function gettransform(chain::DynamicHMCChain)
-    return getfield(chain, :transform)
-end
-
-info(chain::DynamicHMCChain) = getfield(chain, :info)
-
-export pushsample!
-function pushsample!(chain::DynamicHMCChain, Q::DynamicHMC.EvaluatedLogDensity, tree_stats)
-    push!(samples(chain), gettransform(chain)(Q.q))
-    push!(logp(chain), Q.ℓq)
-    push!(info(chain), tree_stats)
-end
-
-export step!
-function step!(chain::DynamicHMCChain)
-    Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state))
-end
-
 function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.EvaluatedLogDensity, tree_stats, steps)
     tQq = t(Q.q)
     T = typeof(tQq)
@@ -57,8 +34,25 @@ function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.Eva
     return DynamicHMCChain{T}(samples, logp, info, meta, Q, transform)
 end
 
-export initialize!
-function initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChain}, ℓ, tr, ad_backend)
+SampleChains.summarize(ch::DynamicHMCChain) = summarize(samples(ch))
+
+function gettransform(chain::DynamicHMCChain)
+    return getfield(chain, :transform)
+end
+
+function SampleChains.pushsample!(chain::DynamicHMCChain, Q::DynamicHMC.EvaluatedLogDensity, tree_stats)
+    push!(samples(chain), gettransform(chain)(Q.q))
+    push!(logp(chain), Q.ℓq)
+    push!(info(chain), tree_stats)
+end
+
+function SampleChains.step!(chain::DynamicHMCChain)
+    Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state))
+end
+
+
+
+function SampleChains.initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChain}, ℓ, tr, ad_backend)
     P = LogDensityProblems.TransformedLogDensity(tr, ℓ)
     ∇P = LogDensityProblems.ADgradient(ad_backend, P)
     reporter = DynamicHMC.NoProgressReport()
@@ -80,15 +74,14 @@ function initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChain}, ℓ, tr, 
     chain = DynamicHMCChain(tr, Q, tree_stats, steps)
 end
 
-export initialize!
 
-function initialize!(::Type{DynamicHMCChain}, ℓ, tr, ad_backend=Val(:ForwardDiff))
+
+function SampleChains.initialize!(::Type{DynamicHMCChain}, ℓ, tr, ad_backend=Val(:ForwardDiff))
     rng = Random.GLOBAL_RNG
     return initialize!(rng, DynamicHMCChain, ℓ, tr, ad_backend)
 end
 
-export drawsamples!
-function drawsamples!(chain::DynamicHMCChain, n=1000)
+function SampleChains.drawsamples!(chain::DynamicHMCChain, n=1000)
     @cleanbreak for j in 1:n
         Q, tree_stats = step!(chain)
         pushsample!(chain, Q, tree_stats)
