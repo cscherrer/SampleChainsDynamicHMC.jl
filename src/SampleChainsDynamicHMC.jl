@@ -80,28 +80,20 @@ function initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChain}, ℓ, tr, 
     chain = DynamicHMCChain(tr, Q, tree_stats, steps)
 end
 
+export initialize!
+
 function initialize!(::Type{DynamicHMCChain}, ℓ, tr, ad_backend=Val(:ForwardDiff))
     rng = Random.GLOBAL_RNG
     return initialize!(rng, DynamicHMCChain, ℓ, tr, ad_backend)
 end
 
 export drawsamples!
-# TODO: Pass a callback argument
 function drawsamples!(chain::DynamicHMCChain, n=1000)
-    try
-        for j in 1:n
-            Q, tree_stats = step!(chain)
-            pushsample!(chain, Q, tree_stats)
-        end
-    catch e
-        if e isa InterruptException
-            @warn "Computation interrupted"
-            return chain
-        else
-            rethrow()
-        end    
-    end
-    return chain       
+    @cleanbreak for j in 1:n
+        Q, tree_stats = step!(chain)
+        pushsample!(chain, Q, tree_stats)
+    end 
+    return chain
 end
 
 end
