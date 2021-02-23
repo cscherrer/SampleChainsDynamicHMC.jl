@@ -25,7 +25,6 @@ end
 samples(chain::DynamicHMCChain) = getfield(chain, :samples)
 logp(chain::DynamicHMCChain) = getfield(chain, :logp)
 
-
 SampleChains.summarize(ch::DynamicHMCChain) = summarize(samples(ch))
 
 function gettransform(chain::DynamicHMCChain)
