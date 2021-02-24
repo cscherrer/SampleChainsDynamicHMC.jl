@@ -50,8 +50,6 @@ function SampleChains.step!(chain::DynamicHMCChain)
     Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state))
 end
 
-
-
 function SampleChains.initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChain}, ℓ, tr, ad_backend)
     P = LogDensityProblems.TransformedLogDensity(tr, ℓ)
     ∇P = LogDensityProblems.ADgradient(ad_backend, P)
