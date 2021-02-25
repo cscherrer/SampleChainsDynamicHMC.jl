@@ -1,6 +1,7 @@
 module SampleChainsDynamicHMC
 
-using SampleChains
+using Reexport
+@reexport using SampleChains
 using LogDensityProblems
 using DynamicHMC
 using NestedTuples
@@ -23,7 +24,7 @@ export DynamicHMCChain
 end
 
 function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.EvaluatedLogDensity, tree_stats, steps)
-    tQq = t(Q.q)
+    tQq = TransformVariables.transform(t, Q.q)
     T = typeof(tQq)
     samples = TupleVector([tQq])
     logp = ElasticVector([Q.ℓq])
@@ -41,7 +42,7 @@ function gettransform(chain::DynamicHMCChain)
 end
 
 function SampleChains.pushsample!(chain::DynamicHMCChain, Q::DynamicHMC.EvaluatedLogDensity, tree_stats)
-    push!(samples(chain), gettransform(chain)(Q.q))
+    push!(samples(chain), transform(gettransform(chain), Q.q))
     push!(logp(chain), Q.ℓq)
     push!(info(chain), tree_stats)
 end
