@@ -79,7 +79,7 @@ function SampleChains.initialize!(::Type{DynamicHMCChain}, ℓ, tr, ad_backend=V
     return initialize!(rng, DynamicHMCChain, ℓ, tr, ad_backend)
 end
 
-function SampleChains.drawsamples!(chain::DynamicHMCChain, n=1000)
+function SampleChains.drawsamples!(chain::DynamicHMCChain, n::Int=1000)
     @cleanbreak for j in 1:n
         Q, tree_stats = step!(chain)
         pushsample!(chain, Q, tree_stats)
