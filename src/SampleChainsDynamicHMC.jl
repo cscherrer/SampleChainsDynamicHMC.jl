@@ -67,7 +67,7 @@ function SampleChains.initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChai
         results.sampling_logdensity,
         results.final_warmup_state,
     )
-
+    
     Q = results.final_warmup_state.Q
     Q, tree_stats = DynamicHMC.mcmc_next_step(steps, Q)
     chain = DynamicHMCChain(tr, Q, tree_stats, steps)
