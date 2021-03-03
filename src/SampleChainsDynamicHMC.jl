@@ -12,11 +12,13 @@ using TransformVariables
 using MappedArrays
 using Random
 
+using SampleChains: chainvec
+
 export DynamicHMCChain
 
 @concrete struct  DynamicHMCChain{T} <: AbstractChain{T}
     samples     # :: AbstractVector{T}
-    logp        # log-density for distribution the sample was drawn from
+    logq        # log-density for distribution the sample was drawn from
     info        # Per-sample metadata, type depends on sampler used
     meta        # Metadata associated with the sample as a whole
     state       
@@ -26,13 +28,13 @@ end
 function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.EvaluatedLogDensity, tree_stats, steps)
     tQq = TransformVariables.transform(t, Q.q)
     T = typeof(tQq)
-    samples = TupleVector([tQq])
-    logp = ElasticVector([Q.ℓq])
-    info = ElasticVector(StructArray([tree_stats]))
+    samples = chainvec(tQq)
+    logq = chainvec(Q.ℓq)
+    info = chainvec(tree_stats)
     meta = steps
     transform = t
 
-    return DynamicHMCChain{T}(samples, logp, info, meta, Q, transform)
+    return DynamicHMCChain{T}(samples, logq, info, meta, Q, transform)
 end
 
 SampleChains.summarize(ch::DynamicHMCChain) = summarize(samples(ch))
@@ -43,7 +45,7 @@ end
 
 function SampleChains.pushsample!(chain::DynamicHMCChain, Q::DynamicHMC.EvaluatedLogDensity, tree_stats)
     push!(samples(chain), transform(gettransform(chain), Q.q))
-    push!(logp(chain), Q.ℓq)
+    push!(logq(chain), Q.ℓq)
     push!(info(chain), tree_stats)
 end
 
@@ -51,7 +53,7 @@ function SampleChains.step!(chain::DynamicHMCChain)
     Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state))
 end
 
-function SampleChains.initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChain}, ℓ, tr, ad_backend)
+function SampleChains.initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChain}, ℓ, tr, ad_backend=Val(:ForwardDiff))
     P = LogDensityProblems.TransformedLogDensity(tr, ℓ)
     ∇P = LogDensityProblems.ADgradient(ad_backend, P)
     reporter = DynamicHMC.NoProgressReport()
@@ -72,8 +74,6 @@ function SampleChains.initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChai
     Q, tree_stats = DynamicHMC.mcmc_next_step(steps, Q)
     chain = DynamicHMCChain(tr, Q, tree_stats, steps)
 end
-
-
 
 function SampleChains.initialize!(::Type{DynamicHMCChain}, ℓ, tr, ad_backend=Val(:ForwardDiff))
     rng = Random.GLOBAL_RNG
