@@ -52,7 +52,7 @@ julia> chain.x[1:10]
  -0.351002647246055
 ```
 
-Or multuple chains:
+Or multiple chains:
 
 ```julia
 julia> chains = initialize!(4, DynamicHMCChain, ℓ, t)
