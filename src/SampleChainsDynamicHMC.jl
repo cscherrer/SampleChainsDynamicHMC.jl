@@ -12,7 +12,7 @@ using TransformVariables
 using MappedArrays
 using Random
 
-using SampleChains: chainvec
+using TupleVectors: chainvec
 
 export DynamicHMCChain
 
