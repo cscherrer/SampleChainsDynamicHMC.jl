@@ -11,8 +11,9 @@ using ConcreteStructs
 using TransformVariables
 using MappedArrays
 using Random
+using TupleVectors
 
-using SampleChains: chainvec
+using TupleVectors: chainvec
 
 export DynamicHMCChain
 
@@ -37,7 +38,7 @@ function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.Eva
     return DynamicHMCChain{T}(samples, logq, info, meta, Q, transform)
 end
 
-SampleChains.summarize(ch::DynamicHMCChain) = summarize(samples(ch))
+TupleVectors.summarize(ch::DynamicHMCChain) = summarize(samples(ch))
 
 function gettransform(chain::DynamicHMCChain)
     return getfield(chain, :transform)
