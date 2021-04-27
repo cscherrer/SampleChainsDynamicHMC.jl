@@ -28,6 +28,7 @@ Reexport = "1"
 SampleChains = "0.3"
 StructArrays = "0.5"
 TransformVariables = "0.3"
+TupleVectors = "0.1"
 julia = "1.5"
 
 [extras]
