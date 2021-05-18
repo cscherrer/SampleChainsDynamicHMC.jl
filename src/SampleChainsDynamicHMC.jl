@@ -13,11 +13,11 @@ using MappedArrays
 using Random
 using TupleVectors
 
-using TupleVectors: chainvec
+using TupleVectors:chainvec
 
 export DynamicHMCChain
 
-@concrete struct  DynamicHMCChain{T} <: AbstractChain{T}
+@concrete struct DynamicHMCChain{T} <: AbstractChain{T}
     samples     # :: AbstractVector{T}
     logq        # log-density for distribution the sample was drawn from
     info        # Per-sample metadata, type depends on sampler used
@@ -61,7 +61,6 @@ end
     reporter
 end
 
-# TODO: add default values
 # Docs adapted from https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 """
 `init`: a NamedTuple which can contain the following fields (all of them optional and provided with reasonable defaults):
@@ -75,7 +74,12 @@ algorithm: see NUTS. It is very unlikely you need to modify this, except perhaps
 
 reporter: how progress is reported. By default, verbosely for interactive sessions using the log message mechanism (see LogProgressReport, and no reporting for non-interactive sessions (see NoProgressReport).
 """   
-function dynamicHMC(init=..., warmup_stages=..., algorithm=..., reporter=...)
+function dynamicHMC(
+          init          = ()
+        , warmup_stages = DynamicHMC.default_warmup_stages()
+        , algorithm     = DynamicHMC.NUTS()
+        , reporter      = DynamicHMC.default_reporter()
+    )
     DynamicHMCConfig(init, warmup_stages, algorithm, reporter)
 end
 
@@ -90,7 +94,7 @@ function SampleChains.initialize!(rng::Random.AbstractRNG, config::DynamicHMCCon
         rng,
         ∇P,
         0;
-        reporter = reporter
+        reporter=reporter
     )
 
     steps = DynamicHMC.mcmc_steps(
