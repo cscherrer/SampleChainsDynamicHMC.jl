@@ -62,6 +62,19 @@ end
 end
 
 # TODO: add default values
+# Docs adapted from https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
+"""
+`init`: a NamedTuple which can contain the following fields (all of them optional and provided with reasonable defaults):
+- q: initial position. Default: random (uniform [-2,2] for each coordinate).
+- κ: kinetic energy specification. Default: Gaussian with identity matrix.
+- ϵ: a scalar for initial stepsize, or nothing for heuristic finders.
+
+warmup_stages: a sequence of warmup stages. See default_warmup_stages and fixed_stepsize_warmup_stages; the latter requires an ϵ in initialization.
+
+algorithm: see NUTS. It is very unlikely you need to modify this, except perhaps for the maximum depth.
+
+reporter: how progress is reported. By default, verbosely for interactive sessions using the log message mechanism (see LogProgressReport, and no reporting for non-interactive sessions (see NoProgressReport).
+"""   
 function dynamicHMC(init=..., warmup_stages=..., algorithm=..., reporter=...)
     DynamicHMCConfig(init, warmup_stages, algorithm, reporter)
 end
