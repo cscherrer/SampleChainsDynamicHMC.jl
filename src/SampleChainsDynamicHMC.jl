@@ -15,7 +15,7 @@ using TupleVectors
 
 using TupleVectors:chainvec
 
-export DynamicHMCChain
+export dynamicHMC
 
 @concrete struct DynamicHMCChain{T} <: AbstractChain{T}
     samples     # :: AbstractVector{T}
