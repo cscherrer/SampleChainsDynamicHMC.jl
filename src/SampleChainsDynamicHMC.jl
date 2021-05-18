@@ -63,6 +63,13 @@ end
 
 # Docs adapted from https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 """
+    dynamicHMC(
+        init          = ()
+      , warmup_stages = DynamicHMC.default_warmup_stages()
+      , algorithm     = DynamicHMC.NUTS()
+      , reporter      = DynamicHMC.NoProgressReport()
+    )
+
 `init`: a NamedTuple which can contain the following fields (all of them optional and provided with reasonable defaults):
 - q: initial position. Default: random (uniform [-2,2] for each coordinate).
 - κ: kinetic energy specification. Default: Gaussian with identity matrix.
@@ -85,7 +92,7 @@ function dynamicHMC(
     DynamicHMCConfig(init, warmup_stages, algorithm, reporter)
 end
 
-function SampleChains.initialize!(rng::Random.AbstractRNG, config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
+function SampleChains.newchain(rng::Random.AbstractRNG, config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
     P = LogDensityProblems.TransformedLogDensity(tr, ℓ)
     ∇P = LogDensityProblems.ADgradient(ad_backend, P)
     reporter = DynamicHMC.NoProgressReport()
@@ -107,9 +114,9 @@ function SampleChains.initialize!(rng::Random.AbstractRNG, config::DynamicHMCCon
     chain = DynamicHMCChain(tr, Q, tree_stats, steps)
 end
 
-function SampleChains.initialize!(config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
+function SampleChains.newchain(config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
     rng = Random.GLOBAL_RNG
-    return initialize!(rng, config, ℓ, tr, ad_backend)
+    return newchain(rng, config, ℓ, tr, ad_backend)
 end
 
 function SampleChains.sample!(chain::DynamicHMCChain, n::Int=1000)
