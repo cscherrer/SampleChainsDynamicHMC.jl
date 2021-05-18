@@ -54,13 +54,25 @@ function SampleChains.step!(chain::DynamicHMCChain)
     Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state))
 end
 
-function SampleChains.initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChain}, ℓ, tr, ad_backend=Val(:ForwardDiff))
+@concrete struct DynamicHMCConfig
+    init
+    warmup_stages
+    algorithm
+    reporter
+end
+
+# TODO: add default values
+function dynamicHMC(init=..., warmup_stages=..., algorithm=..., reporter=...)
+    DynamicHMCConfig(init, warmup_stages, algorithm, reporter)
+end
+
+function SampleChains.initialize!(rng::Random.AbstractRNG, config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
     P = LogDensityProblems.TransformedLogDensity(tr, ℓ)
     ∇P = LogDensityProblems.ADgradient(ad_backend, P)
     reporter = DynamicHMC.NoProgressReport()
 
     # args go here
-    # mcmc_keep_warmup(rng, ℓ, N; initialization, warmup_stages, algorithm, reporter)
+    results = mcmc_keep_warmup(rng, ∇P, 0; init, warmup_stages, algorithm, reporter)
     results = DynamicHMC.mcmc_keep_warmup(
         rng,
         ∇P,
@@ -78,9 +90,9 @@ function SampleChains.initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChai
     chain = DynamicHMCChain(tr, Q, tree_stats, steps)
 end
 
-function SampleChains.initialize!(::Type{DynamicHMCChain}, ℓ, tr, ad_backend=Val(:ForwardDiff))
+function SampleChains.initialize!(config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
     rng = Random.GLOBAL_RNG
-    return initialize!(rng, DynamicHMCChain, ℓ, tr, ad_backend)
+    return initialize!(rng, config, ℓ, tr, ad_backend)
 end
 
 function SampleChains.drawsamples!(chain::DynamicHMCChain, n::Int=1000)
