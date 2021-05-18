@@ -68,11 +68,13 @@ end
 - κ: kinetic energy specification. Default: Gaussian with identity matrix.
 - ϵ: a scalar for initial stepsize, or nothing for heuristic finders.
 
-warmup_stages: a sequence of warmup stages. See default_warmup_stages and fixed_stepsize_warmup_stages; the latter requires an ϵ in initialization.
+`warmup_stages`: a sequence of warmup stages. See `default_warmup_stages` and `fixed_stepsize_warmup_stages`; the latter requires an ϵ in initialization.
 
-algorithm: see NUTS. It is very unlikely you need to modify this, except perhaps for the maximum depth.
+`algorithm`: see `NUTS`. It is very unlikely you need to modify this, except perhaps for the maximum depth.
 
-reporter: how progress is reported. By default, verbosely for interactive sessions using the log message mechanism (see LogProgressReport, and no reporting for non-interactive sessions (see NoProgressReport).
+`reporter`: how progress is reported. By default, verbosely for interactive sessions using the log message mechanism (see `LogProgressReport`, and no reporting for non-interactive sessions (see `NoProgressReport`).
+
+For more details see https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 """   
 function dynamicHMC(
           init          = ()
