@@ -80,7 +80,7 @@ function dynamicHMC(
           init          = ()
         , warmup_stages = DynamicHMC.default_warmup_stages()
         , algorithm     = DynamicHMC.NUTS()
-        , reporter      = DynamicHMC.default_reporter()
+        , reporter      = DynamicHMC.NoProgressReport()
     )
     DynamicHMCConfig(init, warmup_stages, algorithm, reporter)
 end
