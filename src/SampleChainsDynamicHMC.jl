@@ -88,14 +88,12 @@ function SampleChains.initialize!(rng::Random.AbstractRNG, config::DynamicHMCCon
     ∇P = LogDensityProblems.ADgradient(ad_backend, P)
     reporter = DynamicHMC.NoProgressReport()
 
-    # args go here
-    results = mcmc_keep_warmup(rng, ∇P, 0; init, warmup_stages, algorithm, reporter)
-    results = DynamicHMC.mcmc_keep_warmup(
-        rng,
-        ∇P,
-        0;
-        reporter=reporter
-    )
+    results = DynamicHMC.mcmc_keep_warmup(rng, ∇P, 0; 
+          initialization = config.init          
+        , warmup_stages  = config.warmup_stages 
+        , algorithm      = config.algorithm     
+        , reporter       = config.reporter     
+        )
 
     steps = DynamicHMC.mcmc_steps(
         results.sampling_logdensity,
