@@ -54,7 +54,7 @@ function SampleChains.step!(chain::DynamicHMCChain)
     Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state))
 end
 
-@concrete struct DynamicHMCConfig
+@concrete struct DynamicHMCConfig <: ChainConfig{DynamicHMCChain}
     init
     warmup_stages
     algorithm
@@ -112,7 +112,7 @@ function SampleChains.initialize!(config::DynamicHMCConfig, ℓ, tr, ad_backend=
     return initialize!(rng, config, ℓ, tr, ad_backend)
 end
 
-function SampleChains.drawsamples!(chain::DynamicHMCChain, n::Int=1000)
+function SampleChains.sample!(chain::DynamicHMCChain, n::Int=1000)
     @cleanbreak for j in 1:n
         Q, tree_stats = step!(chain)
         pushsample!(chain, Q, tree_stats)
