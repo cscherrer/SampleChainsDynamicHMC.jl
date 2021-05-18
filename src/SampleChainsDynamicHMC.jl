@@ -65,7 +65,7 @@ function SampleChains.initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChai
         0;
         reporter = reporter
     )
-
+    
     steps = DynamicHMC.mcmc_steps(
         results.sampling_logdensity,
         results.final_warmup_state,
