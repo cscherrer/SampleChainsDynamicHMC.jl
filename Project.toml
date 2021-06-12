@@ -27,7 +27,7 @@ NestedTuples = "0.2, 0.3"
 Reexport = "1"
 SampleChains = "0.5"
 StructArrays = "0.5"
-TransformVariables = "0.3"
+TransformVariables = "0.3, 0.4"
 TupleVectors = "0.1"
 julia = "1.5"
 
