@@ -70,7 +70,7 @@ end
       , reporter      = DynamicHMC.NoProgressReport()
     )
 
-`init`: a NamedTuple which can contain the following fields (all of them optional and provided with reasonable defaults):
+`init`: a `NamedTuple` that can contain the following fields (all of them optional and provided with reasonable defaults):
 - q: initial position. Default: random (uniform [-2,2] for each coordinate).
 - κ: kinetic energy specification. Default: Gaussian with identity matrix.
 - ϵ: a scalar for initial stepsize, or nothing for heuristic finders.
