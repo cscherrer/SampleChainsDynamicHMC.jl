@@ -71,9 +71,9 @@ end
     )
 
 `init`: a `NamedTuple` that can contain the following fields (all of them optional and provided with reasonable defaults):
-- q: initial position. Default: random (uniform [-2,2] for each coordinate).
-- κ: kinetic energy specification. Default: Gaussian with identity matrix.
-- ϵ: a scalar for initial stepsize, or nothing for heuristic finders.
+- `q`: initial position. Default: random (uniform `[-2,2]` for each coordinate).
+- `κ`: kinetic energy specification. Default: Gaussian with identity matrix.
+- `ϵ`: a scalar for initial step size, or `nothing` for heuristic finders.
 
 `warmup_stages`: a sequence of warmup stages. See `default_warmup_stages` and `fixed_stepsize_warmup_stages`; the latter requires an ϵ in initialization.
 
