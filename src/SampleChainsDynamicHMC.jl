@@ -77,7 +77,7 @@ end
 
 `warmup_stages`: a sequence of warmup stages. See `DynamicHMC.default_warmup_stages` and `DynamicHMC.fixed_stepsize_warmup_stages`; the latter requires an `ϵ` in initialization.
 
-`algorithm`: see `NUTS`. It is very unlikely you need to modify this, except perhaps for the maximum depth.
+`algorithm`: see `DynamicHMC.NUTS`. It is very unlikely you need to modify this, except perhaps for the maximum depth.
 
 `reporter`: how progress is reported. By default, verbosely for interactive sessions using the log message mechanism (see `DynamicHMC.LogProgressReport`, and no reporting for non-interactive sessions (see `DynamicHMC.NoProgressReport`).
 
