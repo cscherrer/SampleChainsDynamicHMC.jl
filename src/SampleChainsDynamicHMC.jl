@@ -75,7 +75,7 @@ end
 - `κ`: kinetic energy specification. Default: Gaussian with identity matrix.
 - `ϵ`: a scalar for initial step size, or `nothing` for heuristic finders.
 
-`warmup_stages`: a sequence of warmup stages. See `default_warmup_stages` and `fixed_stepsize_warmup_stages`; the latter requires an ϵ in initialization.
+`warmup_stages`: a sequence of warmup stages. See `DynamicHMC.default_warmup_stages` and `DynamicHMC.fixed_stepsize_warmup_stages`; the latter requires an `ϵ` in initialization.
 
 `algorithm`: see `NUTS`. It is very unlikely you need to modify this, except perhaps for the maximum depth.
 
