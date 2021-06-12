@@ -95,16 +95,16 @@ julia> config = dynamicHMC(
            ),
            reporter=LogProgressReport(), # log progress using Logging
        );
-function dynamicHMC(;
-          init          = ()
-        , warmup_stages = DynamicHMC.default_warmup_stages()
-        , algorithm     = DynamicHMC.NUTS()
-        , reporter      = DynamicHMC.NoProgressReport()
-    )
-    DynamicHMCConfig(init, warmup_stages, algorithm, reporter)
-end
 ```
 """
+function dynamicHMC(;
+    init          = ()
+  , warmup_stages = DynamicHMC.default_warmup_stages()
+  , algorithm     = DynamicHMC.NUTS()
+  , reporter      = DynamicHMC.NoProgressReport()
+)
+    DynamicHMCConfig(init, warmup_stages, algorithm, reporter)
+end
 
 function SampleChains.newchain(rng::Random.AbstractRNG, config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
     P = LogDensityProblems.TransformedLogDensity(tr, ℓ)
