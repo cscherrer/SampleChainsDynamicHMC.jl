@@ -79,7 +79,7 @@ end
 
 `algorithm`: see `NUTS`. It is very unlikely you need to modify this, except perhaps for the maximum depth.
 
-`reporter`: how progress is reported. By default, verbosely for interactive sessions using the log message mechanism (see `LogProgressReport`, and no reporting for non-interactive sessions (see `NoProgressReport`).
+`reporter`: how progress is reported. By default, verbosely for interactive sessions using the log message mechanism (see `DynamicHMC.LogProgressReport`, and no reporting for non-interactive sessions (see `DynamicHMC.NoProgressReport`).
 
 For more details see https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 """   
