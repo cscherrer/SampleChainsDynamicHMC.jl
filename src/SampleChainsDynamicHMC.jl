@@ -82,7 +82,19 @@ end
 `reporter`: how progress is reported. By default, verbosely for interactive sessions using the log message mechanism (see `DynamicHMC.LogProgressReport`, and no reporting for non-interactive sessions (see `DynamicHMC.NoProgressReport`).
 
 For more details see https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
-"""   
+# Example
+
+```jldoctest
+julia> using LinearAlgebra
+
+julia> config = dynamicHMC(
+           warmup_stages=default_warmup_stages(
+               M=Symmetric, # adapt dense positive definite metric
+               stepsize_adaptation=DualAveraging(δ=0.9), # target acceptance rate 0.9
+               doubling_stages=7, # 7-stage metric adaptation
+           ),
+           reporter=LogProgressReport(), # log progress using Logging
+       );
 function dynamicHMC(;
           init          = ()
         , warmup_stages = DynamicHMC.default_warmup_stages()
