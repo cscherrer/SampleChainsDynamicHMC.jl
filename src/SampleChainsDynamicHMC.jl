@@ -83,7 +83,7 @@ end
 
 For more details see https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 """   
-function dynamicHMC(
+function dynamicHMC(;
           init          = ()
         , warmup_stages = DynamicHMC.default_warmup_stages()
         , algorithm     = DynamicHMC.NUTS()
