@@ -103,6 +103,8 @@ function dynamicHMC(;
     )
     DynamicHMCConfig(init, warmup_stages, algorithm, reporter)
 end
+```
+"""
 
 function SampleChains.newchain(rng::Random.AbstractRNG, config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
     P = LogDensityProblems.TransformedLogDensity(tr, ℓ)
