@@ -84,10 +84,9 @@ initialization.
 `algorithm`: see `DynamicHMC.NUTS`. It is very unlikely you need to modify this,
 except perhaps for the maximum depth. 
 
-`reporter`: how progress is reported. By default, verbosely for interactive
-sessions using the log message mechanism (see `DynamicHMC.LogProgressReport`,
-and no reporting for non-interactive sessions (see
-`DynamicHMC.NoProgressReport`). 
+`reporter`: how progress is reported. This is currently silent by default (see
+`DynamicHMC.NoProgressReport`), but this default will likely change in future
+releases. 
 
 For more details see https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 # Example
