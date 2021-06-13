@@ -2,8 +2,8 @@ module SampleChainsDynamicHMC
 
 using Reexport
 @reexport using SampleChains
+@reexport using DynamicHMC
 using LogDensityProblems
-using DynamicHMC
 using NestedTuples
 using ElasticArrays
 using StructArrays
