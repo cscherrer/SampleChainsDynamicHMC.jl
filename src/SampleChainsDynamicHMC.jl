@@ -15,7 +15,7 @@ using TupleVectors
 
 using TupleVectors:chainvec
 
-export dynamicHMC
+export dynamichmc
 
 @concrete struct DynamicHMCChain{T} <: AbstractChain{T}
     samples     # :: AbstractVector{T}
@@ -63,7 +63,7 @@ end
 
 # Docs adapted from https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 """
-    dynamicHMC(
+    dynamichmc(
         init          = ()
       , warmup_stages = DynamicHMC.default_warmup_stages()
       , algorithm     = DynamicHMC.NUTS()
@@ -87,7 +87,7 @@ For more details see https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 ```jldoctest
 julia> using LinearAlgebra
 
-julia> config = dynamicHMC(
+julia> config = dynamichmc(
            warmup_stages=default_warmup_stages(
                M=Symmetric, # adapt dense positive definite metric
                stepsize_adaptation=DualAveraging(δ=0.9), # target acceptance rate 0.9
@@ -97,7 +97,7 @@ julia> config = dynamicHMC(
        );
 ```
 """
-function dynamicHMC(;
+function dynamichmc(;
     init          = ()
   , warmup_stages = DynamicHMC.default_warmup_stages()
   , algorithm     = DynamicHMC.NUTS()
