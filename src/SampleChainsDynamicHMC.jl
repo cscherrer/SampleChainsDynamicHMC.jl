@@ -64,22 +64,30 @@ end
 # Docs adapted from https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 """
     dynamichmc(
-        init          = ()
+      ; init          = ()
       , warmup_stages = DynamicHMC.default_warmup_stages()
       , algorithm     = DynamicHMC.NUTS()
       , reporter      = DynamicHMC.NoProgressReport()
     )
 
-`init`: a `NamedTuple` that can contain the following fields (all of them optional and provided with reasonable defaults):
+`init`: a `NamedTuple` that can contain the following fields (all of them
+optional and provided with reasonable defaults): 
 - `q`: initial position. Default: random (uniform `[-2,2]` for each coordinate).
 - `κ`: kinetic energy specification. Default: Gaussian with identity matrix.
 - `ϵ`: a scalar for initial step size, or `nothing` for heuristic finders.
 
-`warmup_stages`: a sequence of warmup stages. See `DynamicHMC.default_warmup_stages` and `DynamicHMC.fixed_stepsize_warmup_stages`; the latter requires an `ϵ` in initialization.
+`warmup_stages`: a sequence of warmup stages. See
+`DynamicHMC.default_warmup_stages` and
+`DynamicHMC.fixed_stepsize_warmup_stages`; the latter requires an `ϵ` in
+initialization. 
 
-`algorithm`: see `DynamicHMC.NUTS`. It is very unlikely you need to modify this, except perhaps for the maximum depth.
+`algorithm`: see `DynamicHMC.NUTS`. It is very unlikely you need to modify this,
+except perhaps for the maximum depth. 
 
-`reporter`: how progress is reported. By default, verbosely for interactive sessions using the log message mechanism (see `DynamicHMC.LogProgressReport`, and no reporting for non-interactive sessions (see `DynamicHMC.NoProgressReport`).
+`reporter`: how progress is reported. By default, verbosely for interactive
+sessions using the log message mechanism (see `DynamicHMC.LogProgressReport`,
+and no reporting for non-interactive sessions (see
+`DynamicHMC.NoProgressReport`). 
 
 For more details see https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 # Example
