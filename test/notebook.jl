@@ -10,12 +10,12 @@ end
 
 t = as((x=asℝ, σ=asℝ₊))
 
-chain = newchain(dynamicHMC(), ℓ, t)
+chain = newchain(dynamichmc(), ℓ, t)
 
 sample!(chain, 9)
 sample!(chain, 90)
 
-chains = newchain(4, dynamicHMC(), ℓ, t)
+chains = newchain(4, dynamichmc(), ℓ, t)
 
 sample!(chains, 9)
 sample!(chains, 90)
