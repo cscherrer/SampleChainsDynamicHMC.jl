@@ -23,15 +23,15 @@ TransformVariables.TransformTuple{NamedTuple{(:x, :σ), Tuple{TransformVariables
 
 Initialize and take some samples:
 ```julia
-julia> chain = initialize!(DynamicHMCChain, ℓ, t)
+julia> chain = newchain(DynamicHMCChain, ℓ, t)
 1-element Chain with schema (x = Float64, σ = Float64)
 (x = -0.66±0.0, σ = 0.65±0.0)
 
-julia> drawsamples!(chain, 9)
+julia> sample!(chain, 9)
 10-element Chain with schema (x = Float64, σ = Float64)
 (x = -0.36±0.38, σ = 1.26±0.69)
 
-julia> drawsamples!(chain, 90)
+julia> sample!(chain, 90)
 100-element Chain with schema (x = Float64, σ = Float64)
 (x = -0.32±0.68, σ = 1.06±0.66)
 
@@ -55,15 +55,15 @@ julia> chain.x[1:10]
 Or multiple chains:
 
 ```julia
-julia> chains = initialize!(4, DynamicHMCChain, ℓ, t)
+julia> chains = newchain(4, DynamicHMCChain, ℓ, t)
 4-element MultiChain with 4 chains and schema (x = Float64, σ = Float64)
 (x = -0.38±0.75, σ = 0.76±0.76)
 
-julia> drawsamples!(chains, 9)
+julia> sample!(chains, 9)
 40-element MultiChain with 4 chains and schema (x = Float64, σ = Float64)
 (x = -0.11±0.73, σ = 0.83±0.8)
 
-julia> drawsamples!(chains, 90)
+julia> sample!(chains, 90)
 400-element MultiChain with 4 chains and schema (x = Float64, σ = Float64)
 (x = -0.18±0.75, σ = 0.9±0.97)
 

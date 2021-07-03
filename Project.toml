@@ -1,7 +1,7 @@
 name = "SampleChainsDynamicHMC"
 uuid = "6d9fd711-e8b2-4778-9c70-c1dfb499d4c4"
 authors = ["Chad Scherrer <chad.scherrer@gmail.com> and contributors"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 ConcreteStructs = "2569d6c7-a4a2-43d3-a901-331e8e4be471"
@@ -25,9 +25,9 @@ LogDensityProblems = "0.10"
 MappedArrays = "0.3,0.4"
 NestedTuples = "0.2, 0.3"
 Reexport = "1"
-SampleChains = "0.4"
+SampleChains = "0.5"
 StructArrays = "0.5"
-TransformVariables = "0.3"
+TransformVariables = "0.3, 0.4"
 TupleVectors = "0.1"
 julia = "1.5"
 

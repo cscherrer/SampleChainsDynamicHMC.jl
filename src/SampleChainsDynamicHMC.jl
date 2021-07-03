@@ -2,8 +2,8 @@ module SampleChainsDynamicHMC
 
 using Reexport
 @reexport using SampleChains
+@reexport using DynamicHMC
 using LogDensityProblems
-using DynamicHMC
 using NestedTuples
 using ElasticArrays
 using StructArrays
@@ -13,11 +13,11 @@ using MappedArrays
 using Random
 using TupleVectors
 
-using TupleVectors: chainvec
+using TupleVectors:chainvec
 
-export DynamicHMCChain
+export dynamichmc
 
-@concrete struct  DynamicHMCChain{T} <: AbstractChain{T}
+@concrete struct DynamicHMCChain{T} <: AbstractChain{T}
     samples     # :: AbstractVector{T}
     logq        # log-density for distribution the sample was drawn from
     info        # Per-sample metadata, type depends on sampler used
@@ -54,17 +54,76 @@ function SampleChains.step!(chain::DynamicHMCChain)
     Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state))
 end
 
-function SampleChains.initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChain}, ℓ, tr, ad_backend=Val(:ForwardDiff))
+@concrete struct DynamicHMCConfig <: ChainConfig{DynamicHMCChain}
+    init
+    warmup_stages
+    algorithm
+    reporter
+end
+
+# Docs adapted from https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
+"""
+    dynamichmc(
+      ; init          = ()
+      , warmup_stages = DynamicHMC.default_warmup_stages()
+      , algorithm     = DynamicHMC.NUTS()
+      , reporter      = DynamicHMC.NoProgressReport()
+    )
+
+`init`: a `NamedTuple` that can contain the following fields (all of them
+optional and provided with reasonable defaults): 
+- `q`: initial position. Default: random (uniform `[-2,2]` for each coordinate).
+- `κ`: kinetic energy specification. Default: Gaussian with identity matrix.
+- `ϵ`: a scalar for initial step size, or `nothing` for heuristic finders.
+
+`warmup_stages`: a sequence of warmup stages. See
+`DynamicHMC.default_warmup_stages` and
+`DynamicHMC.fixed_stepsize_warmup_stages`; the latter requires an `ϵ` in
+initialization. 
+
+`algorithm`: see `DynamicHMC.NUTS`. It is very unlikely you need to modify this,
+except perhaps for the maximum depth. 
+
+`reporter`: how progress is reported. This is currently silent by default (see
+`DynamicHMC.NoProgressReport`), but this default will likely change in future
+releases. 
+
+For more details see https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
+# Example
+
+```jldoctest
+julia> using LinearAlgebra
+
+julia> config = dynamichmc(
+           warmup_stages=default_warmup_stages(
+               M=Symmetric, # adapt dense positive definite metric
+               stepsize_adaptation=DualAveraging(δ=0.9), # target acceptance rate 0.9
+               doubling_stages=7, # 7-stage metric adaptation
+           ),
+           reporter=LogProgressReport(), # log progress using Logging
+       );
+```
+"""
+function dynamichmc(;
+    init          = ()
+  , warmup_stages = DynamicHMC.default_warmup_stages()
+  , algorithm     = DynamicHMC.NUTS()
+  , reporter      = DynamicHMC.NoProgressReport()
+)
+    DynamicHMCConfig(init, warmup_stages, algorithm, reporter)
+end
+
+function SampleChains.newchain(rng::Random.AbstractRNG, config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
     P = LogDensityProblems.TransformedLogDensity(tr, ℓ)
     ∇P = LogDensityProblems.ADgradient(ad_backend, P)
     reporter = DynamicHMC.NoProgressReport()
 
-    results = DynamicHMC.mcmc_keep_warmup(
-        rng,
-        ∇P,
-        0;
-        reporter = reporter
-    )
+    results = DynamicHMC.mcmc_keep_warmup(rng, ∇P, 0; 
+          initialization = config.init          
+        , warmup_stages  = config.warmup_stages 
+        , algorithm      = config.algorithm     
+        , reporter       = config.reporter     
+        )
 
     steps = DynamicHMC.mcmc_steps(
         results.sampling_logdensity,
@@ -76,12 +135,12 @@ function SampleChains.initialize!(rng::Random.AbstractRNG, ::Type{DynamicHMCChai
     chain = DynamicHMCChain(tr, Q, tree_stats, steps)
 end
 
-function SampleChains.initialize!(::Type{DynamicHMCChain}, ℓ, tr, ad_backend=Val(:ForwardDiff))
+function SampleChains.newchain(config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
     rng = Random.GLOBAL_RNG
-    return initialize!(rng, DynamicHMCChain, ℓ, tr, ad_backend)
+    return newchain(rng, config, ℓ, tr, ad_backend)
 end
 
-function SampleChains.drawsamples!(chain::DynamicHMCChain, n::Int=1000)
+function SampleChains.sample!(chain::DynamicHMCChain, n::Int=1000)
     @cleanbreak for j in 1:n
         Q, tree_stats = step!(chain)
         pushsample!(chain, Q, tree_stats)
