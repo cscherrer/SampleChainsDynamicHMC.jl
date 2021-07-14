@@ -1,7 +1,7 @@
 name = "SampleChainsDynamicHMC"
 uuid = "6d9fd711-e8b2-4778-9c70-c1dfb499d4c4"
 authors = ["Chad Scherrer <chad.scherrer@gmail.com> and contributors"]
-version = "0.3.0"
+version = "0.3.1"
 
 [deps]
 ConcreteStructs = "2569d6c7-a4a2-43d3-a901-331e8e4be471"
