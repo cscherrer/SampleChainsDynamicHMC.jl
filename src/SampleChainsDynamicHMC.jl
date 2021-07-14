@@ -99,7 +99,7 @@ For more details see https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 # Example
 
 ```jldoctest
-julia> using LinearAlgebra
+julia> using LinearAlgebra, ReverseDiff
 
 julia> config = dynamichmc(
            warmup_stages=default_warmup_stages(
