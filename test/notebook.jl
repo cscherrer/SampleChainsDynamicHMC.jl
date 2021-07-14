@@ -38,4 +38,30 @@ end
 	samples(chains)
 end
 
+using LinearAlgebra
+using ReverseDiff
+using SampleChainsDynamicHMC.LogDensityProblems
 
+@testset "config options" begin
+	config = dynamichmc(
+		warmup_stages=default_warmup_stages(
+			M=Symmetric, # adapt dense positive definite metric
+			stepsize_adaptation=DualAveraging(δ=0.9), # target acceptance rate 0.9
+			doubling_stages=7, # 7-stage metric adaptation
+		),
+		reporter=LogProgressReport(), # log progress using Logging
+		ad_backend=Val(:ReverseDiff), # use ReverseDiff AD package
+	)
+
+	chain = newchain(config, ℓ, t)
+	@test length(chain) == 1
+
+	meta = getfield(chain, :meta)
+	@test meta.H.κ.M⁻¹ isa Symmetric
+	@test meta.H.ℓ isa LogDensityProblems.ReverseDiffLogDensity
+
+	sample!(chain, 9)
+	@test length(chain) == 10
+	sample!(chain, 90)
+	@test length(chain) == 100
+end
