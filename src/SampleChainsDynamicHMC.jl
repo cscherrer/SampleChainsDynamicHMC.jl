@@ -17,7 +17,7 @@ using TupleVectors:chainvec
 
 export dynamichmc
 
-@concrete struct DynamicHMCChain{T} <: AbstractChain{T}
+@concrete mutable struct DynamicHMCChain{T} <: AbstractChain{T}
     samples     # :: AbstractVector{T}
     logq        # log-density for distribution the sample was drawn from
     info        # Per-sample metadata, type depends on sampler used
@@ -35,7 +35,7 @@ function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.Eva
     meta = steps
     transform = t
 
-    return DynamicHMCChain{T}(samples, logq, info, meta, Ref(Q), transform)
+    return DynamicHMCChain{T}(samples, logq, info, meta, Q, transform)
 end
 
 TupleVectors.summarize(ch::DynamicHMCChain) = summarize(samples(ch))
@@ -51,8 +51,8 @@ function SampleChains.pushsample!(chain::DynamicHMCChain, Q::DynamicHMC.Evaluate
 end
 
 function SampleChains.step!(chain::DynamicHMCChain)
-    Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state)[])
-    getfield(chain, :state)[] = Q
+    Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state))
+    setfield!(chain, :state, Q)
     return Q, tree_stats
 end
 
