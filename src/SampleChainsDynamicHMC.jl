@@ -35,7 +35,7 @@ function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.Eva
     meta = steps
     transform = t
 
-    return DynamicHMCChain{T}(samples, logq, info, meta, Q, transform)
+    return DynamicHMCChain{T}(samples, logq, info, meta, zeroarr(Q), transform)
 end
 
 TupleVectors.summarize(ch::DynamicHMCChain) = summarize(samples(ch))
@@ -51,7 +51,9 @@ function SampleChains.pushsample!(chain::DynamicHMCChain, Q::DynamicHMC.Evaluate
 end
 
 function SampleChains.step!(chain::DynamicHMCChain)
-    Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state))
+    Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state)[])
+    getfield(chain, :state)[] = Q
+    return Q, tree_stats
 end
 
 @concrete struct DynamicHMCConfig <: ChainConfig{DynamicHMCChain}
@@ -154,6 +156,13 @@ function SampleChains.sample!(chain::DynamicHMCChain, n::Int=1000)
         pushsample!(chain, Q, tree_stats)
     end 
     return chain
+end
+
+# I have no idea if this makes sense. But it's kind of cool so I wanted to try it
+function zeroarr(x::T) where {T}
+    a = Array{T,0}(undef)
+    a[] = x
+    return a
 end
 
 end
