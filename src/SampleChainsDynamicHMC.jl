@@ -35,7 +35,7 @@ function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.Eva
     meta = steps
     transform = t
 
-    return DynamicHMCChain{T}(samples, logq, info, meta, zeroarr(Q), transform)
+    return DynamicHMCChain{T}(samples, logq, info, meta, Ref(Q), transform)
 end
 
 TupleVectors.summarize(ch::DynamicHMCChain) = summarize(samples(ch))
@@ -158,11 +158,5 @@ function SampleChains.sample!(chain::DynamicHMCChain, n::Int=1000)
     return chain
 end
 
-# I have no idea if this makes sense. But it's kind of cool so I wanted to try it
-function zeroarr(x::T) where {T}
-    a = Array{T,0}(undef)
-    a[] = x
-    return a
-end
 
 end
