@@ -24,9 +24,10 @@ export dynamichmc
     meta        # Metadata associated with the sample as a whole
     state       
     transform
+    reporter
 end
 
-function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.EvaluatedLogDensity, tree_stats, steps)
+function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.EvaluatedLogDensity, tree_stats, steps, reporter = NoProgressReport())
     tQq = TransformVariables.transform(t, Q.q)
     T = typeof(tQq)
     samples = chainvec(tQq)
@@ -35,7 +36,7 @@ function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.Eva
     meta = steps
     transform = t
 
-    return DynamicHMCChain{T}(samples, logq, info, meta, Q, transform)
+    return DynamicHMCChain{T}(samples, logq, info, meta, Q, transform, reporter)
 end
 
 TupleVectors.summarize(ch::DynamicHMCChain) = summarize(samples(ch))
@@ -127,13 +128,13 @@ end
 function SampleChains.newchain(rng::Random.AbstractRNG, config::DynamicHMCConfig, ℓ, tr)
     P = LogDensityProblems.TransformedLogDensity(tr, ℓ)
     ∇P = LogDensityProblems.ADgradient(config.ad_backend, P)
-    reporter = DynamicHMC.NoProgressReport()
+    reporter = config.reporter
 
     results = DynamicHMC.mcmc_keep_warmup(rng, ∇P, 0; 
           initialization = config.init          
         , warmup_stages  = config.warmup_stages 
         , algorithm      = config.algorithm     
-        , reporter       = config.reporter     
+        , reporter       = reporter     
         )
 
     steps = DynamicHMC.mcmc_steps(
@@ -143,7 +144,7 @@ function SampleChains.newchain(rng::Random.AbstractRNG, config::DynamicHMCConfig
     
     Q = results.final_warmup_state.Q
     Q, tree_stats = DynamicHMC.mcmc_next_step(steps, Q)
-    chain = DynamicHMCChain(tr, Q, tree_stats, steps)
+    chain = DynamicHMCChain(tr, Q, tree_stats, steps, reporter)
 end
 
 function SampleChains.newchain(config::DynamicHMCConfig, ℓ, tr)
