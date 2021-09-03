@@ -2,6 +2,7 @@
 
 using SampleChainsDynamicHMC
 using TransformVariables
+using Logging
 using Test
 
 function ℓ(nt)
@@ -64,4 +65,20 @@ using SampleChainsDynamicHMC.LogDensityProblems
 	@test length(chain) == 10
 	sample!(chain, 90)
 	@test length(chain) == 100
+end
+
+@testset "reporting" begin
+	io = IOBuffer()
+	chains = with_logger(SimpleLogger(io)) do
+		newchain(dynamichmc(reporter=LogProgressReport()), ℓ, t)
+	end
+	warmup_log = String(take!(io))
+	@test !isempty(warmup_log)
+
+	io = IOBuffer()
+	with_logger(SimpleLogger(io)) do
+		sample!(chains, 10)
+	end
+	log = String(take!(io))
+	@test !isempty(log)
 end
