@@ -1,7 +1,7 @@
 name = "SampleChainsDynamicHMC"
 uuid = "6d9fd711-e8b2-4778-9c70-c1dfb499d4c4"
 authors = ["Chad Scherrer <chad.scherrer@gmail.com> and contributors"]
-version = "0.3.3"
+version = "0.3.4"
 
 [deps]
 ConcreteStructs = "2569d6c7-a4a2-43d3-a901-331e8e4be471"
@@ -33,8 +33,9 @@ julia = "1.5"
 
 [extras]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["LinearAlgebra", "ReverseDiff", "Test"]
+test = ["LinearAlgebra", "Logging", "ReverseDiff", "Test"]
