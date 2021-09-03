@@ -152,9 +152,12 @@ function SampleChains.newchain(config::DynamicHMCConfig, ℓ, tr)
 end
 
 function SampleChains.sample!(chain::DynamicHMCChain, n::Int=1000)
+    reporter = getfield(chain, :reporter)
+    mcmc_reporter = DynamicHMC.make_mcmc_reporter(reporter, n; currently_warmup = false)
     @cleanbreak for j in 1:n
         Q, tree_stats = step!(chain)
         pushsample!(chain, Q, tree_stats)
+        DynamicHMC.report(mcmc_reporter, j)
     end 
     return chain
 end
