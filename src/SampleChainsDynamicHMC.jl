@@ -17,16 +17,17 @@ using TupleVectors:chainvec
 
 export dynamichmc
 
-@concrete struct DynamicHMCChain{T} <: AbstractChain{T}
+@concrete mutable struct DynamicHMCChain{T} <: AbstractChain{T}
     samples     # :: AbstractVector{T}
     logq        # log-density for distribution the sample was drawn from
     info        # Per-sample metadata, type depends on sampler used
     meta        # Metadata associated with the sample as a whole
     state       
     transform
+    reporter
 end
 
-function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.EvaluatedLogDensity, tree_stats, steps)
+function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.EvaluatedLogDensity, tree_stats, steps, reporter = NoProgressReport())
     tQq = TransformVariables.transform(t, Q.q)
     T = typeof(tQq)
     samples = chainvec(tQq)
@@ -35,7 +36,7 @@ function DynamicHMCChain(t::TransformVariables.TransformTuple, Q::DynamicHMC.Eva
     meta = steps
     transform = t
 
-    return DynamicHMCChain{T}(samples, logq, info, meta, Q, transform)
+    return DynamicHMCChain{T}(samples, logq, info, meta, Q, transform, reporter)
 end
 
 TupleVectors.summarize(ch::DynamicHMCChain) = summarize(samples(ch))
@@ -52,6 +53,8 @@ end
 
 function SampleChains.step!(chain::DynamicHMCChain)
     Q, tree_stats = DynamicHMC.mcmc_next_step(getfield(chain, :meta), getfield(chain, :state))
+    setfield!(chain, :state, Q)
+    return Q, tree_stats
 end
 
 @concrete struct DynamicHMCConfig <: ChainConfig{DynamicHMCChain}
@@ -59,6 +62,7 @@ end
     warmup_stages
     algorithm
     reporter
+    ad_backend
 end
 
 # Docs adapted from https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
@@ -68,6 +72,7 @@ end
       , warmup_stages = DynamicHMC.default_warmup_stages()
       , algorithm     = DynamicHMC.NUTS()
       , reporter      = DynamicHMC.NoProgressReport()
+      , ad_backend    = Val(:ForwardDiff)
     )
 
 `init`: a `NamedTuple` that can contain the following fields (all of them
@@ -88,11 +93,16 @@ except perhaps for the maximum depth.
 `DynamicHMC.NoProgressReport`), but this default will likely change in future
 releases. 
 
+`ad_backend`: The automatic differentiation backend to use for gradient
+computation, specified as either a symbol or a `Val` type with a symbol that
+refers to an AD package. See [LogDensityProblems.jl](https://tamaspapp.eu/LogDensityProblems.jl/stable/#Automatic-differentiation)
+for supported packages, including `ForwardDiff`, `ReverseDiff`, `Zygote`, and `Tracker`.
+
 For more details see https://tamaspapp.eu/DynamicHMC.jl/stable/interface/
 # Example
 
 ```jldoctest
-julia> using LinearAlgebra
+julia> using LinearAlgebra, ReverseDiff
 
 julia> config = dynamichmc(
            warmup_stages=default_warmup_stages(
@@ -101,6 +111,7 @@ julia> config = dynamichmc(
                doubling_stages=7, # 7-stage metric adaptation
            ),
            reporter=LogProgressReport(), # log progress using Logging
+           ad_backend=Val(:ReverseDiff), # use ReverseDiff AD package
        );
 ```
 """
@@ -109,20 +120,21 @@ function dynamichmc(;
   , warmup_stages = DynamicHMC.default_warmup_stages()
   , algorithm     = DynamicHMC.NUTS()
   , reporter      = DynamicHMC.NoProgressReport()
+  , ad_backend    = Val(:ForwardDiff)
 )
-    DynamicHMCConfig(init, warmup_stages, algorithm, reporter)
+    DynamicHMCConfig(init, warmup_stages, algorithm, reporter, ad_backend)
 end
 
-function SampleChains.newchain(rng::Random.AbstractRNG, config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
+function SampleChains.newchain(rng::Random.AbstractRNG, config::DynamicHMCConfig, ℓ, tr)
     P = LogDensityProblems.TransformedLogDensity(tr, ℓ)
-    ∇P = LogDensityProblems.ADgradient(ad_backend, P)
-    reporter = DynamicHMC.NoProgressReport()
+    ∇P = LogDensityProblems.ADgradient(config.ad_backend, P)
+    reporter = config.reporter
 
     results = DynamicHMC.mcmc_keep_warmup(rng, ∇P, 0; 
           initialization = config.init          
         , warmup_stages  = config.warmup_stages 
         , algorithm      = config.algorithm     
-        , reporter       = config.reporter     
+        , reporter       = reporter     
         )
 
     steps = DynamicHMC.mcmc_steps(
@@ -132,20 +144,23 @@ function SampleChains.newchain(rng::Random.AbstractRNG, config::DynamicHMCConfig
     
     Q = results.final_warmup_state.Q
     Q, tree_stats = DynamicHMC.mcmc_next_step(steps, Q)
-    chain = DynamicHMCChain(tr, Q, tree_stats, steps)
+    chain = DynamicHMCChain(tr, Q, tree_stats, steps, reporter)
 end
 
-function SampleChains.newchain(config::DynamicHMCConfig, ℓ, tr, ad_backend=Val(:ForwardDiff))
-    rng = Random.GLOBAL_RNG
-    return newchain(rng, config, ℓ, tr, ad_backend)
+function SampleChains.newchain(config::DynamicHMCConfig, ℓ, tr)
+    return newchain(Random.GLOBAL_RNG, config, ℓ, tr)
 end
 
 function SampleChains.sample!(chain::DynamicHMCChain, n::Int=1000)
+    reporter = getfield(chain, :reporter)
+    mcmc_reporter = DynamicHMC.make_mcmc_reporter(reporter, n; currently_warmup = false)
     @cleanbreak for j in 1:n
         Q, tree_stats = step!(chain)
         pushsample!(chain, Q, tree_stats)
+        DynamicHMC.report(mcmc_reporter, j)
     end 
     return chain
 end
+
 
 end
